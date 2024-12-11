@@ -9,6 +9,17 @@ docker exec -it mysql bash
 mysql -D snippetbox -u web -p
 ```
 
+```bash
+go run ./cmd/web
+```
+
+```bash
+go build -o ./tmp/web ./cmd/web/
+cp -r ./tls /tmp/
+cd /tmp/
+./web 
+```
+
 ```sql
 -- Create a `snippets` table.
 CREATE TABLE snippets (
