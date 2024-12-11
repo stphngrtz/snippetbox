@@ -1,18 +1,23 @@
 # Snippetbox
+This projects covers the topics from the book [Let's go](https://lets-go.alexedwards.net/) by [Alex Edwards](https://github.com/alexedwards).
 
+Run the MySQL database instance with Docker.
 ```bash
 docker run --name mysql -p 3306:3306 -e MYSQL_DATABASE=snippetbox -e MYSQL_USER=web -e MYSQL_PASSWORD=pass -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:latest
 ```
 
+Connect to the MySQL database instance and login as user.
 ```bash
 docker exec -it mysql bash
 mysql -D snippetbox -u web -p
 ```
 
+Run the application.
 ```bash
 go run ./cmd/web
 ```
 
+Build and run the application.
 ```bash
 go build -o ./tmp/web ./cmd/web/
 cp -r ./tls /tmp/
@@ -20,8 +25,24 @@ cd /tmp/
 ./web 
 ```
 
+Run tests.
+```bash
+go test -v ./cmd/web
+go test -v ./internal/models
+go test -v -short ./...
+
+```
+
+Run tests with coverage.
+```bash
+go test -cover ./...
+
+go test -covermode=count -coverprofile=./tmp/profile.out ./...
+go tool cover -html=./tmp/profile.out
+```
+
+Set up the database (execute as user).
 ```sql
--- Create a `snippets` table.
 CREATE TABLE snippets (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(100) NOT NULL,
@@ -30,10 +51,8 @@ CREATE TABLE snippets (
     expires DATETIME NOT NULL
 );
 
--- Add an index on the created column.
 CREATE INDEX idx_snippets_created ON snippets(created);
 
--- Add some dummy records (which we'll use in the next couple of chapters).
 INSERT INTO snippets (title, content, created, expires) VALUES (
     'An old silent pond',
     'An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō',
@@ -76,6 +95,22 @@ CREATE TABLE users (
 ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 ```
 
+Connect to the MySQL database instance and login as root.
+```bash
+docker exec -it mysql bash
+mysql -u root -p
+```
+
+Create and set up the test database (execute as root).
+```sql
+CREATE DATABASE test_snippetbox CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'test_web';
+GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON test_snippetbox.* TO 'test_web';
+ALTER USER 'test_web' IDENTIFIED BY 'pass';
+```
+
+Create a TLS certificate.
 ```bash
 mkdir tls
 cd tls
